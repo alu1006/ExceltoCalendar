@@ -45,21 +45,36 @@ def main():
 
         # 取得現在時間、指定時區、轉為 ISO 格式
         now=datetime.now(tz).isoformat(timespec='seconds')
-        events=service.events().list(calendarId='primary',timeMin=now,singleEvents=True,orderBy='startTime').execute()
-        print(events)
         
-        print(now)
-        rule = {
-            'scope': {
-                'type': 'scopeType',
-                'value': 'scopeEmail',
+        template={
+            "summary": "Important event!",
+            "location": "Virtual event (Slack)",
+            "description": "This a description",
+            "start": {
+                "dateTime": now,
+                "timeZone": "Asia/Taipei"
             },
-            'role': 'role'
+            "end": {
+                "dateTime": now,
+                "timeZone": "Asia/Taipei"
+            },
+            "
+            
         }
 
-        created_rule = service.acl().insert(calendarId='primary', body=rule).execute()
-
-        print(created_rule['id'])
+        response = service.events().insert(calendarId="c_fclsqdl2se8oalno5pn54n7604@group.calendar.google.com", body=template).execute()
+        print(response['summary'])
+        
+        page_token=None
+        calendar_list = service.calendarList().list(pageToken=page_token).execute()
+        print(calendar_list)
+        while True:
+            calendar_list = service.calendarList().list(pageToken=page_token).execute()
+            for calendar_list_entry in calendar_list['items']:
+                print(calendar_list_entry['summary'])
+            page_token = calendar_list.get('nextPageToken')
+            if not page_token:
+                break
 
 
     except HttpError as error:
